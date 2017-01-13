@@ -1,0 +1,2 @@
+# imagecrop
+Image cropping plugin
