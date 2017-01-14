@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = {
   precision: 4,
-  cropbox: { x1: 0, y1: 0, x2: 50, y2: 50 },
+  aspectRatio: null,
+  cropbox: { x1: 0, y1: 0, x2: 100, y2: 100 },
   inputs: {}
 };

@@ -99,6 +99,7 @@ export default class ImageCrop {
   resizeCropbox (offset) {
     var x = offset.x * 100 / this.$image.width()
     var y = offset.y * 100 / this.$image.height()
+
     this.cropbox.x2 += x
     this.cropbox.y2 += y
 
@@ -108,6 +109,29 @@ export default class ImageCrop {
 
     if (this.cropbox.y2 > 100) {
       this.cropbox.y2 = 100
+    }
+
+    if (this.options.aspectRatio) {
+      let width = (this.cropbox.x2 - this.cropbox.x1) * this.$image.width() / 100
+      let height = width / this.options.aspectRatio
+      this.cropbox.y2 = this.cropbox.y1 + (height * 100 / this.$image.height())
+
+      if (this.cropbox.y2 > 100) {
+        this.cropbox.y2 = 100
+        height = (this.cropbox.y2 - this.cropbox.y1) * this.$image.height() / 100
+        width = height * this.options.aspectRatio
+      }
+
+      this.cropbox.x2 = this.cropbox.x1 + (width * 100 / this.$image.width())
+      this.cropbox.y2 = this.cropbox.y1 + (height * 100 / this.$image.height())
+    }
+
+    if (this.cropbox.x2 < this.cropbox.x1) {
+      this.cropbox.x2 = this.cropbox.x1
+    }
+
+    if (this.cropbox.y2 < this.cropbox.y1) {
+      this.cropbox.y2 = this.cropbox.y1
     }
 
     this.positionCropbox()
@@ -127,6 +151,7 @@ export default class ImageCrop {
   init () {
     this.addDOM()
     this.positionCropbox()
+    this.resizeCropbox({x: 0, y: 0})
     this.cropboxDragHandler = new DragHandler(this.$cropbox, this.moveCropbox.bind(this))
     this.cropboxDragHandler.init()
     this.resizehandleDragHandler = new DragHandler(this.$resizehandle, this.resizeCropbox.bind(this))

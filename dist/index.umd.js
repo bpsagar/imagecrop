@@ -80,7 +80,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var discover = exports.discover = function discover() {
 	  (0, _jquery2.default)('[data-imagecrop]').each(function (index, image) {
 	    var id = (0, _jquery2.default)(image).data('imagecrop');
+	    var aspectRatio = parseFloat((0, _jquery2.default)(image).data('imagecrop-aspectratio'), 10) || null;
+	    var precision = parseFloat((0, _jquery2.default)(image).data('imagecrop-precision'), 10) || null;
 	    create('[data-imagecrop="' + id + '"', {
+	      aspectRatio: aspectRatio,
+	      precision: precision,
 	      inputs: {
 	        x1: '[data-imagecrop-x1="' + id + '"]',
 	        y1: '[data-imagecrop-y1="' + id + '"]',
@@ -581,6 +585,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function resizeCropbox(offset) {
 	      var x = offset.x * 100 / this.$image.width();
 	      var y = offset.y * 100 / this.$image.height();
+	
 	      this.cropbox.x2 += x;
 	      this.cropbox.y2 += y;
 	
@@ -590,6 +595,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	      if (this.cropbox.y2 > 100) {
 	        this.cropbox.y2 = 100;
+	      }
+	
+	      if (this.options.aspectRatio) {
+	        var width = (this.cropbox.x2 - this.cropbox.x1) * this.$image.width() / 100;
+	        var height = width / this.options.aspectRatio;
+	        this.cropbox.y2 = this.cropbox.y1 + height * 100 / this.$image.height();
+	
+	        if (this.cropbox.y2 > 100) {
+	          this.cropbox.y2 = 100;
+	          height = (this.cropbox.y2 - this.cropbox.y1) * this.$image.height() / 100;
+	          width = height * this.options.aspectRatio;
+	        }
+	
+	        this.cropbox.x2 = this.cropbox.x1 + width * 100 / this.$image.width();
+	        this.cropbox.y2 = this.cropbox.y1 + height * 100 / this.$image.height();
+	      }
+	
+	      if (this.cropbox.x2 < this.cropbox.x1) {
+	        this.cropbox.x2 = this.cropbox.x1;
+	      }
+	
+	      if (this.cropbox.y2 < this.cropbox.y1) {
+	        this.cropbox.y2 = this.cropbox.y1;
 	      }
 	
 	      this.positionCropbox();
@@ -611,6 +639,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function init() {
 	      this.addDOM();
 	      this.positionCropbox();
+	      this.resizeCropbox({ x: 0, y: 0 });
 	      this.cropboxDragHandler = new _draghandler2.default(this.$cropbox, this.moveCropbox.bind(this));
 	      this.cropboxDragHandler.init();
 	      this.resizehandleDragHandler = new _draghandler2.default(this.$resizehandle, this.resizeCropbox.bind(this));
@@ -650,7 +679,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.default = {
 	  precision: 4,
-	  cropbox: { x1: 0, y1: 0, x2: 50, y2: 50 },
+	  aspectRatio: null,
+	  cropbox: { x1: 0, y1: 0, x2: 100, y2: 100 },
 	  inputs: {}
 	};
 
