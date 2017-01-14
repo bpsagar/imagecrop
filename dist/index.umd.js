@@ -318,9 +318,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        e.preventDefault();
 	        _this.handleDragEnd(e);
 	      });
-	      (0, _jquery2.default)(document).on('touchmove', function (e) {
+	      (0, _jquery2.default)(document).on('touchend', function (e) {
 	        e.preventDefault();
-	        _this.handleDragEnd(e.touches[0]);
+	        _this.handleDragEnd(e.changedTouches[0]);
 	      });
 	    }
 	  }]);

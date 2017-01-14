@@ -77,9 +77,9 @@ export default class DragHandler {
       e.preventDefault()
       this.handleDragEnd(e)
     })
-    $(document).on('touchmove', (e) => {
+    $(document).on('touchend', (e) => {
       e.preventDefault()
-      this.handleDragEnd(e.touches[0])
+      this.handleDragEnd(e.changedTouches[0])
     })
   }
 }
