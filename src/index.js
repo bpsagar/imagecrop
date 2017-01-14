@@ -12,7 +12,15 @@ export class ImageCrop {
     this.$image = $(`#${id}`)
     this.options = $.extend(defaults, this.options)
     this.cropbox = this.options.cropbox || defaults.cropbox
-    this.init()
+
+    // Initialize everything once the image has been loaded
+    let img = document.querySelector(`#${id}`)
+    if (img.complete) {
+      this.init()
+    }
+    else {
+      img.addEventListener('load', this.init.bind(this))
+    }
   }
 
   addDOM () {

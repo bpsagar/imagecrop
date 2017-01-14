@@ -94,7 +94,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    this.$image = (0, _jquery2.default)('#' + id);
 	    this.options = _jquery2.default.extend(_defaults2.default, this.options);
 	    this.cropbox = this.options.cropbox || _defaults2.default.cropbox;
-	    this.init();
+	
+	    var img = document.querySelector('#' + id);
+	
+	    if (img.complete) {
+	      this.init();
+	    } else {
+	      img.addEventListener('load', this.init.bind(this));
+	    }
 	  }
 	
 	  _createClass(ImageCrop, [{
