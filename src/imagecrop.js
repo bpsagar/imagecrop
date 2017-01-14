@@ -40,7 +40,7 @@ export default class ImageCrop {
     this.$container.append(`<div class="${constants.overlayClass}"></div>`)
     this.$container.append(`<div class="${constants.cropboxClass}"></div>`)
     this.$cropbox = this.$container.find(`.${constants.cropboxClass}`)
-    this.$cropbox.append(`<div class="${constants.resizehandleClass}">&varr;</div>`)
+    this.$cropbox.append(`<div class="${constants.resizehandleClass}"></div>`)
     this.$resizehandle = this.$cropbox.find(`.${constants.resizehandleClass}`)
     this.$cropbox.css({ backgroundImage: `url(${this.$image.attr('src')})` })
   }

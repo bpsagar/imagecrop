@@ -126,7 +126,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	
 	// module
-	exports.push([module.id, ".imagecrop {\n  position: relative;\n  display: inline-block;\n  font-size: 0; }\n  .imagecrop .overlay {\n    position: absolute;\n    background-color: rgba(0, 0, 0, 0.8);\n    left: 0;\n    right: 0;\n    top: 0;\n    bottom: 0; }\n  .imagecrop .cropbox {\n    position: absolute;\n    cursor: move; }\n    .imagecrop .cropbox:after {\n      content: '';\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      border: 1px dashed #FFF; }\n    .imagecrop .cropbox .resizehandle {\n      position: absolute;\n      right: 0;\n      bottom: 0;\n      width: 30px;\n      height: 30px;\n      line-height: 30px;\n      font-size: 24px;\n      text-align: center;\n      color: #FFF;\n      background-color: rgba(0, 0, 0, 0.3);\n      border-radius: 50%;\n      z-index: 1;\n      cursor: se-resize;\n      margin: 2px;\n      transform: rotate(-45deg); }\n      .imagecrop .cropbox .resizehandle:hover {\n        background-color: rgba(0, 0, 0, 0.6); }\n", ""]);
+	exports.push([module.id, ".imagecrop {\n  position: relative;\n  display: inline-block;\n  font-size: 0; }\n  .imagecrop .overlay {\n    position: absolute;\n    background-color: rgba(0, 0, 0, 0.7);\n    left: 0;\n    right: 0;\n    top: 0;\n    bottom: 0; }\n  .imagecrop .cropbox {\n    position: absolute;\n    cursor: move; }\n    .imagecrop .cropbox:after {\n      content: '';\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      border: 1px dashed #FFF; }\n    .imagecrop .cropbox .resizehandle {\n      position: absolute;\n      right: 0px;\n      bottom: 0px;\n      width: 10px;\n      height: 10px;\n      background-color: #FFF;\n      border-radius: 50%;\n      z-index: 1;\n      cursor: se-resize;\n      transform: translateX(50%) translateY(50%); }\n", ""]);
 	
 	// exports
 
@@ -519,7 +519,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      this.$container.append('<div class="' + _constants2.default.overlayClass + '"></div>');
 	      this.$container.append('<div class="' + _constants2.default.cropboxClass + '"></div>');
 	      this.$cropbox = this.$container.find('.' + _constants2.default.cropboxClass);
-	      this.$cropbox.append('<div class="' + _constants2.default.resizehandleClass + '">&varr;</div>');
+	      this.$cropbox.append('<div class="' + _constants2.default.resizehandleClass + '"></div>');
 	      this.$resizehandle = this.$cropbox.find('.' + _constants2.default.resizehandleClass);
 	      this.$cropbox.css({ backgroundImage: 'url(' + this.$image.attr('src') + ')' });
 	    }

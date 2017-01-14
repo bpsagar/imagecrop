@@ -68,7 +68,7 @@ var ImageCrop = function () {
       this.$container.append('<div class="' + _constants2.default.overlayClass + '"></div>');
       this.$container.append('<div class="' + _constants2.default.cropboxClass + '"></div>');
       this.$cropbox = this.$container.find('.' + _constants2.default.cropboxClass);
-      this.$cropbox.append('<div class="' + _constants2.default.resizehandleClass + '">&varr;</div>');
+      this.$cropbox.append('<div class="' + _constants2.default.resizehandleClass + '"></div>');
       this.$resizehandle = this.$cropbox.find('.' + _constants2.default.resizehandleClass);
       this.$cropbox.css({ backgroundImage: 'url(' + this.$image.attr('src') + ')' });
     }

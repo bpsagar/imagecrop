@@ -1,6 +1,4 @@
-$resizehandle-color: #FFF;
-$resizehandle-size: 30px;
-$resizehandle-font-size: 24px;
+$cropbox-color: #FFF;
 
 .imagecrop {
   position: relative;
@@ -9,7 +7,7 @@ $resizehandle-font-size: 24px;
 
   .overlay {
     position: absolute;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.7);
     left: 0;
     right: 0;
     top: 0;
@@ -27,29 +25,20 @@ $resizehandle-font-size: 24px;
       right: 0;
       top: 0;
       bottom: 0;
-      border: 1px dashed #FFF;
+      border: 1px dashed $cropbox-color;
     }
 
     .resizehandle {
       position: absolute;
-      right: 0;
-      bottom: 0;
-      width: $resizehandle-size;
-      height: $resizehandle-size;
-      line-height: $resizehandle-size;
-      font-size: $resizehandle-font-size;
-      text-align: center;
-      color: $resizehandle-color;
-      background-color: rgba(0, 0, 0, 0.3);
+      right: 0px;
+      bottom: 0px;
+      width: 10px;
+      height: 10px;
+      background-color: $cropbox-color;
       border-radius: 50%;
       z-index: 1;
       cursor: se-resize;
-      margin: 2px;
-      transform: rotate(-45deg);
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.6);
-      }
+      transform: translateX(50%) translateY(50%);
     }
   }
 }
