@@ -1,0 +1,55 @@
+$resizehandle-color: #FFF;
+$resizehandle-size: 30px;
+$resizehandle-font-size: 24px;
+
+.imagecrop {
+  position: relative;
+  display: inline-block;
+  font-size: 0;
+
+  .overlay {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+  }
+
+  .cropbox {
+    position: absolute;
+    cursor: move;
+
+    &:after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      border: 1px dashed #FFF;
+    }
+
+    .resizehandle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: $resizehandle-size;
+      height: $resizehandle-size;
+      line-height: $resizehandle-size;
+      font-size: $resizehandle-font-size;
+      text-align: center;
+      color: $resizehandle-color;
+      background-color: rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+      z-index: 1;
+      cursor: se-resize;
+      margin: 2px;
+      transform: rotate(-45deg);
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+    }
+  }
+}
