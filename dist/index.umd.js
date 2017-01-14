@@ -459,6 +459,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _jquery = __webpack_require__(5);
@@ -477,173 +479,146 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _draghandler2 = _interopRequireDefault(_draghandler);
 	
+	var _cropbox = __webpack_require__(10);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var ImageCrop = function () {
 	  function ImageCrop(id, options) {
+	    var _this = this;
+	
 	    _classCallCheck(this, ImageCrop);
 	
-	    this.id = id;
-	    this.options = options || {};
-	    this.$image = (0, _jquery2.default)('' + id);
-	    this.options = _jquery2.default.extend(_defaults2.default, this.options);
-	    this.initCropbox();
+	    var $image = (0, _jquery2.default)('' + id);
+	    options = options || {};
+	    options = _jquery2.default.extend(_defaults2.default, options);
 	
 	    // Initialize everything once the image has been loaded
 	    var img = document.querySelector(id);
 	    if (img.complete) {
-	      this.init();
+	      this.init($image, options);
 	    } else {
-	      img.addEventListener('load', this.init.bind(this));
+	      img.addEventListener('load', function () {
+	        _this.init($image, options);
+	      });
 	    }
 	  }
 	
-	  _createClass(ImageCrop, [{
-	    key: 'initCropbox',
-	    value: function initCropbox() {
-	      var _this = this;
+	  /**
+	   * Returns the initial x1, y1, x2, y2, image width, height and aspect ratio
+	   * @param  {jQuery element} $image  image element
+	   * @param  {Object}         options cropbox options
+	   * @return {Object}         initial cropbox properties
+	   */
 	
-	      this.cropbox = {};
+	
+	  _createClass(ImageCrop, [{
+	    key: 'getInitCropbox',
+	    value: function getInitCropbox($image, options) {
+	      var cropbox = {
+	        imageWidth: $image.width(),
+	        imageHeight: $image.height(),
+	        aspectRatio: options.aspectRatio
+	      };
 	      var fields = ['x1', 'y1', 'x2', 'y2'];
 	      fields.map(function (field) {
 	        var value = _defaults2.default.cropbox[field];
-	        if (_this.options.inputs[field]) {
-	          value = parseFloat((0, _jquery2.default)(_this.options.inputs[field]).val(), 10) || value;
+	        if (options.inputs[field]) {
+	          value = parseFloat((0, _jquery2.default)(options.inputs[field]).val(), 10) || value;
 	        }
-	        _this.cropbox[field] = value;
+	        cropbox[field] = value;
 	      });
+	      return cropbox;
 	    }
+	
+	    /**
+	     * Adding necessary DOM
+	     * @param {jQuery element} $image image element
+	     */
+	
 	  }, {
 	    key: 'addDOM',
-	    value: function addDOM() {
-	      this.$image.wrap('<div class="' + _constants2.default.containerClass + '"></div>');
-	      this.$container = this.$image.closest('.' + _constants2.default.containerClass);
-	      this.$container.append('<div class="' + _constants2.default.overlayClass + '"></div>');
-	      this.$container.append('<div class="' + _constants2.default.cropboxClass + '"></div>');
-	      this.$cropbox = this.$container.find('.' + _constants2.default.cropboxClass);
-	      this.$cropbox.append('<div class="' + _constants2.default.resizehandleClass + '"></div>');
-	      this.$resizehandle = this.$cropbox.find('.' + _constants2.default.resizehandleClass);
-	      this.$cropbox.css({ backgroundImage: 'url(' + this.$image.attr('src') + ')' });
+	    value: function addDOM($image) {
+	      $image.wrap('<div class="' + _constants2.default.containerClass + '"></div>');
+	      var $container = $image.closest('.' + _constants2.default.containerClass);
+	      $container.append('<div class="' + _constants2.default.overlayClass + '"></div>');
+	      $container.append('<div class="' + _constants2.default.cropboxClass + '"></div>');
+	      var $cropbox = $container.find('.' + _constants2.default.cropboxClass);
+	      $cropbox.append('<div class="' + _constants2.default.resizehandleClass + '"></div>');
+	      var $resizehandle = $cropbox.find('.' + _constants2.default.resizehandleClass);
+	      $cropbox.css({ backgroundImage: 'url(' + $image.attr('src') + ')' });
+	      return [$container, $cropbox, $resizehandle];
 	    }
+	
+	    /**
+	     * Position the cropbox
+	     * @param  {jQuery element} $cropbox image's cropbox element
+	     * @param  {Object}         cropbox  cropbox properties
+	     */
+	
 	  }, {
 	    key: 'positionCropbox',
-	    value: function positionCropbox() {
-	      var width = this.$image.width();
-	      var height = this.$image.height();
-	      var bpX = -(this.cropbox.x1 * width / 100);
-	      var bpY = -(this.cropbox.y1 * height / 100);
-	      this.$cropbox.css({
-	        left: this.cropbox.x1 + '%',
-	        top: this.cropbox.y1 + '%',
-	        right: 100 - this.cropbox.x2 + '%',
-	        bottom: 100 - this.cropbox.y2 + '%',
+	    value: function positionCropbox($cropbox, cropbox) {
+	      var bpX = -(cropbox.x1 * cropbox.imageWidth / 100);
+	      var bpY = -(cropbox.y1 * cropbox.imageHeight / 100);
+	      $cropbox.css({
+	        left: cropbox.x1 + '%',
+	        top: cropbox.y1 + '%',
+	        right: 100 - cropbox.x2 + '%',
+	        bottom: 100 - cropbox.y2 + '%',
 	        backgroundPosition: bpX + 'px ' + bpY + 'px',
-	        backgroundSize: width + 'px ' + height + 'px'
+	        backgroundSize: cropbox.imageWidth + 'px ' + cropbox.imageHeight + 'px'
 	      });
-	      this.updateFields();
 	    }
-	  }, {
-	    key: 'moveCropbox',
-	    value: function moveCropbox(offset) {
-	      var x = offset.x * 100 / this.$image.width();
-	      var y = offset.y * 100 / this.$image.height();
-	      this.cropbox.x1 += x;
-	      this.cropbox.y1 += y;
-	      this.cropbox.x2 += x;
-	      this.cropbox.y2 += y;
 	
-	      if (this.cropbox.x1 < 0) {
-	        var xOffset = -this.cropbox.x1;
-	        this.cropbox.x1 = 0;
-	        this.cropbox.x2 += xOffset;
-	      }
+	    /**
+	     * Update the cropbox properties to their input elements
+	     * @param  {Object} cropbox cropbox properties
+	     * @param  {Object} options cropbox options
+	     */
 	
-	      if (this.cropbox.y1 < 0) {
-	        var yOffset = -this.cropbox.y1;
-	        this.cropbox.y1 = 0;
-	        this.cropbox.y2 += yOffset;
-	      }
-	
-	      if (this.cropbox.x2 > 100) {
-	        var xOffset = this.cropbox.x2 - 100;
-	        this.cropbox.x2 = 100;
-	        this.cropbox.x1 -= xOffset;
-	      }
-	
-	      if (this.cropbox.y2 > 100) {
-	        var yOffset = this.cropbox.y2 - 100;
-	        this.cropbox.y2 = 100;
-	        this.cropbox.y1 -= yOffset;
-	      }
-	
-	      this.positionCropbox();
-	    }
-	  }, {
-	    key: 'resizeCropbox',
-	    value: function resizeCropbox(offset) {
-	      var x = offset.x * 100 / this.$image.width();
-	      var y = offset.y * 100 / this.$image.height();
-	
-	      this.cropbox.x2 += x;
-	      this.cropbox.y2 += y;
-	
-	      if (this.cropbox.x2 > 100) {
-	        this.cropbox.x2 = 100;
-	      }
-	
-	      if (this.cropbox.y2 > 100) {
-	        this.cropbox.y2 = 100;
-	      }
-	
-	      if (this.options.aspectRatio) {
-	        var width = (this.cropbox.x2 - this.cropbox.x1) * this.$image.width() / 100;
-	        var height = width / this.options.aspectRatio;
-	        this.cropbox.y2 = this.cropbox.y1 + height * 100 / this.$image.height();
-	
-	        if (this.cropbox.y2 > 100) {
-	          this.cropbox.y2 = 100;
-	          height = (this.cropbox.y2 - this.cropbox.y1) * this.$image.height() / 100;
-	          width = height * this.options.aspectRatio;
-	        }
-	
-	        this.cropbox.x2 = this.cropbox.x1 + width * 100 / this.$image.width();
-	        this.cropbox.y2 = this.cropbox.y1 + height * 100 / this.$image.height();
-	      }
-	
-	      if (this.cropbox.x2 < this.cropbox.x1) {
-	        this.cropbox.x2 = this.cropbox.x1;
-	      }
-	
-	      if (this.cropbox.y2 < this.cropbox.y1) {
-	        this.cropbox.y2 = this.cropbox.y1;
-	      }
-	
-	      this.positionCropbox();
-	    }
 	  }, {
 	    key: 'updateFields',
-	    value: function updateFields() {
-	      for (var field in this.options.inputs) {
-	        if (this.options.inputs[field]) {
-	          var value = this.cropbox[field];
-	          var factor = Math.pow(10, this.options.precision);
+	    value: function updateFields(cropbox, options) {
+	      for (var field in options.inputs) {
+	        if (options.inputs[field]) {
+	          var value = cropbox[field];
+	          var factor = Math.pow(10, options.precision);
 	          value = Math.round(value * factor) / factor;
-	          (0, _jquery2.default)(this.options.inputs[field]).val(value);
+	          (0, _jquery2.default)(options.inputs[field]).val(value);
 	        }
 	      }
 	    }
 	  }, {
 	    key: 'init',
-	    value: function init() {
-	      this.addDOM();
-	      this.positionCropbox();
-	      this.resizeCropbox({ x: 0, y: 0 });
-	      this.cropboxDragHandler = new _draghandler2.default(this.$cropbox, this.moveCropbox.bind(this));
-	      this.cropboxDragHandler.init();
-	      this.resizehandleDragHandler = new _draghandler2.default(this.$resizehandle, this.resizeCropbox.bind(this));
-	      this.resizehandleDragHandler.init();
+	    value: function init($image, options) {
+	      var _this2 = this;
+	
+	      var cropbox = this.getInitCropbox($image, options);
+	
+	      var _addDOM = this.addDOM($image),
+	          _addDOM2 = _slicedToArray(_addDOM, 3),
+	          $container = _addDOM2[0],
+	          $cropbox = _addDOM2[1],
+	          $resizehandle = _addDOM2[2];
+	
+	      cropbox = (0, _cropbox.resize)(cropbox, { x: 0, y: 0 });
+	      this.positionCropbox($cropbox, cropbox);
+	      this.updateFields(cropbox, options);
+	      var cropboxDragHandler = new _draghandler2.default($cropbox, function (offset) {
+	        cropbox = (0, _cropbox.move)(cropbox, offset);
+	        _this2.positionCropbox($cropbox, cropbox);
+	        _this2.updateFields(cropbox, options);
+	      });
+	      cropboxDragHandler.init();
+	      var resizehandleDragHandler = new _draghandler2.default($resizehandle, function (offset) {
+	        cropbox = (0, _cropbox.resize)(cropbox, offset);
+	        _this2.positionCropbox($cropbox, cropbox);
+	        _this2.updateFields(cropbox, options);
+	      });
+	      resizehandleDragHandler.init();
 	    }
 	  }]);
 	
@@ -813,6 +788,131 @@ return /******/ (function(modules) { // webpackBootstrap
 	}();
 	
 	exports.default = DragHandler;
+
+/***/ },
+/* 10 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	/**
+	 * Move the cropbox by an offset value
+	 * @param  {Object} cropbox contains x1, y1, x2, y2, imageWidth and imageHeight
+	 * @param  {Object} offset  x and y offset
+	 * @return {Object}         x1, y1, x2, y2 after it is moved
+	 */
+	var move = exports.move = function move(cropbox, offset) {
+	  var x1 = cropbox.x1,
+	      y1 = cropbox.y1,
+	      x2 = cropbox.x2,
+	      y2 = cropbox.y2,
+	      imageWidth = cropbox.imageWidth,
+	      imageHeight = cropbox.imageHeight;
+	
+	  var x = offset.x * 100 / imageWidth;
+	  var y = offset.y * 100 / imageHeight;
+	
+	  x1 += x;
+	  y1 += y;
+	  x2 += x;
+	  y2 += y;
+	
+	  if (x1 < 0) {
+	    // When the box is moved outside the left boundary
+	    var xOffset = -x1;
+	    x1 = 0;
+	    x2 += xOffset;
+	  }
+	
+	  if (y1 < 0) {
+	    // When the box is moved outside the top boundary
+	    var yOffset = -y1;
+	    y1 = 0;
+	    y2 += yOffset;
+	  }
+	
+	  if (x2 > 100) {
+	    // When the box is moved outside the right boundary
+	    var xOffset = x2 - 100;
+	    x2 = 100;
+	    x1 -= xOffset;
+	  }
+	
+	  if (y2 > 100) {
+	    // When the box is moved outside the bottom boundary
+	    var yOffset = y2 - 100;
+	    y2 = 100;
+	    y1 -= yOffset;
+	  }
+	
+	  return _extends({}, cropbox, { x1: x1, y1: y1, x2: x2, y2: y2 });
+	};
+	
+	/**
+	 * Resize the cropbox by an offset value
+	 * @param  {Object} cropbox contains x1, y1, x2, y2, imageWidth and imageHeight
+	 * @param  {Object} offset  x and y offset
+	 * @return {Object}         x1, y1, x2, y2 after it is moved
+	 */
+	var resize = exports.resize = function resize(cropbox, offset) {
+	  var x1 = cropbox.x1,
+	      y1 = cropbox.y1,
+	      x2 = cropbox.x2,
+	      y2 = cropbox.y2,
+	      imageWidth = cropbox.imageWidth,
+	      imageHeight = cropbox.imageHeight,
+	      aspectRatio = cropbox.aspectRatio;
+	
+	  var x = offset.x * 100 / imageWidth;
+	  var y = offset.y * 100 / imageHeight;
+	
+	  x2 += x;
+	  y2 += y;
+	
+	  if (x2 > 100) {
+	    // When the box is resized outside the right boundary
+	    x2 = 100;
+	  }
+	
+	  if (y2 > 100) {
+	    // When the box is resized outside the bottom boundary
+	    y2 = 100;
+	  }
+	
+	  if (aspectRatio) {
+	    // If an aspect ratio is specified adjust the x2 and y2 coordinates
+	    var width = (x2 - x1) * imageWidth / 100;
+	    var height = width / aspectRatio;
+	    y2 = y1 + height * 100 / imageHeight;
+	
+	    if (y2 > 100) {
+	      y2 = 100;
+	      height = (y2 - y1) * imageHeight / 100;
+	      width = height * aspectRatio;
+	    }
+	
+	    x2 = x1 + width * 100 / imageWidth;
+	    y2 = y1 + height * 100 / imageHeight;
+	  }
+	
+	  if (x2 < x1) {
+	    // x2 coordinate cannot be less than x1
+	    x2 = x1;
+	  }
+	
+	  if (y2 < y1) {
+	    // y2 coordinate cannot be less than y1
+	    y2 = y1;
+	  }
+	
+	  return _extends({}, cropbox, { x1: x1, y1: y1, x2: x2, y2: y2 });
+	};
 
 /***/ }
 /******/ ])

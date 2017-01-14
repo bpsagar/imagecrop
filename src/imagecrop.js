@@ -2,159 +2,114 @@ import $ from 'jquery'
 import constants from './constants'
 import defaults from './defaults'
 import DragHandler from './draghandler'
-
+import { move, resize } from './cropbox'
 
 export default class ImageCrop {
   constructor (id, options) {
-    this.id = id
-    this.options = options || {}
-    this.$image = $(`${id}`)
-    this.options = $.extend(defaults, this.options)
-    this.initCropbox()
+    let $image = $(`${id}`)
+    options = options || {}
+    options = $.extend(defaults, options)
 
     // Initialize everything once the image has been loaded
     let img = document.querySelector(id)
     if (img.complete) {
-      this.init()
+      this.init($image, options)
     }
     else {
-      img.addEventListener('load', this.init.bind(this))
+      img.addEventListener('load', () => { this.init($image, options) })
     }
   }
 
-  initCropbox () {
-    this.cropbox = {}
+  /**
+   * Returns the initial x1, y1, x2, y2, image width, height and aspect ratio
+   * @param  {jQuery element} $image  image element
+   * @param  {Object}         options cropbox options
+   * @return {Object}         initial cropbox properties
+   */
+  getInitCropbox ($image, options) {
+    let cropbox = {
+      imageWidth: $image.width(),
+      imageHeight: $image.height(),
+      aspectRatio: options.aspectRatio
+    }
     let fields = ['x1', 'y1', 'x2', 'y2']
     fields.map(field => {
       let value = defaults.cropbox[field]
-      if (this.options.inputs[field]) {
-        value = parseFloat($(this.options.inputs[field]).val(), 10) || value 
+      if (options.inputs[field]) {
+        value = parseFloat($(options.inputs[field]).val(), 10) || value 
       }
-      this.cropbox[field] = value
+      cropbox[field] = value
     })
+    return cropbox
   }
 
-  addDOM () {
-    this.$image.wrap(`<div class="${constants.containerClass}"></div>`)
-    this.$container = this.$image.closest(`.${constants.containerClass}`)
-    this.$container.append(`<div class="${constants.overlayClass}"></div>`)
-    this.$container.append(`<div class="${constants.cropboxClass}"></div>`)
-    this.$cropbox = this.$container.find(`.${constants.cropboxClass}`)
-    this.$cropbox.append(`<div class="${constants.resizehandleClass}"></div>`)
-    this.$resizehandle = this.$cropbox.find(`.${constants.resizehandleClass}`)
-    this.$cropbox.css({ backgroundImage: `url(${this.$image.attr('src')})` })
+  /**
+   * Adding necessary DOM
+   * @param {jQuery element} $image image element
+   */
+  addDOM ($image) {
+    $image.wrap(`<div class="${constants.containerClass}"></div>`)
+    let $container = $image.closest(`.${constants.containerClass}`)
+    $container.append(`<div class="${constants.overlayClass}"></div>`)
+    $container.append(`<div class="${constants.cropboxClass}"></div>`)
+    let $cropbox = $container.find(`.${constants.cropboxClass}`)
+    $cropbox.append(`<div class="${constants.resizehandleClass}"></div>`)
+    let $resizehandle = $cropbox.find(`.${constants.resizehandleClass}`)
+    $cropbox.css({ backgroundImage: `url(${$image.attr('src')})` })
+    return [$container, $cropbox, $resizehandle]
   }
 
-  positionCropbox () {
-    let width = this.$image.width()
-    let height = this.$image.height()
-    let bpX = -(this.cropbox.x1 * width / 100)
-    let bpY = -(this.cropbox.y1 * height / 100)
-    this.$cropbox.css({
-      left: `${this.cropbox.x1}%`,
-      top: `${this.cropbox.y1}%`,
-      right: `${(100 - this.cropbox.x2)}%`,
-      bottom: `${(100 - this.cropbox.y2)}%`,
+  /**
+   * Position the cropbox
+   * @param  {jQuery element} $cropbox image's cropbox element
+   * @param  {Object}         cropbox  cropbox properties
+   */
+  positionCropbox ($cropbox, cropbox) {
+    let bpX = -(cropbox.x1 * cropbox.imageWidth / 100)
+    let bpY = -(cropbox.y1 * cropbox.imageHeight / 100)
+    $cropbox.css({
+      left: `${cropbox.x1}%`,
+      top: `${cropbox.y1}%`,
+      right: `${(100 - cropbox.x2)}%`,
+      bottom: `${(100 - cropbox.y2)}%`,
       backgroundPosition: `${bpX}px ${bpY}px`,
-      backgroundSize: `${width}px ${height}px`,
+      backgroundSize: `${cropbox.imageWidth}px ${cropbox.imageHeight}px`,
     })
-    this.updateFields()
   }
 
-  moveCropbox (offset) {
-    var x = offset.x * 100 / this.$image.width()
-    var y = offset.y * 100 / this.$image.height()
-    this.cropbox.x1 += x
-    this.cropbox.y1 += y
-    this.cropbox.x2 += x
-    this.cropbox.y2 += y
-
-    if (this.cropbox.x1 < 0) {
-      var xOffset = - this.cropbox.x1
-      this.cropbox.x1 = 0
-      this.cropbox.x2 += xOffset
-    }
-
-    if (this.cropbox.y1 < 0) {
-      var yOffset = - this.cropbox.y1
-      this.cropbox.y1 = 0
-      this.cropbox.y2 += yOffset
-    }
-
-    if (this.cropbox.x2 > 100) {
-      var xOffset = this.cropbox.x2 - 100
-      this.cropbox.x2 = 100
-      this.cropbox.x1 -= xOffset
-    }
-
-    if (this.cropbox.y2 > 100) {
-      var yOffset = this.cropbox.y2 - 100
-      this.cropbox.y2 = 100
-      this.cropbox.y1 -= yOffset
-    }
-
-    this.positionCropbox()
-  }
-
-  resizeCropbox (offset) {
-    var x = offset.x * 100 / this.$image.width()
-    var y = offset.y * 100 / this.$image.height()
-
-    this.cropbox.x2 += x
-    this.cropbox.y2 += y
-
-    if (this.cropbox.x2 > 100) {
-      this.cropbox.x2 = 100
-    }
-
-    if (this.cropbox.y2 > 100) {
-      this.cropbox.y2 = 100
-    }
-
-    if (this.options.aspectRatio) {
-      let width = (this.cropbox.x2 - this.cropbox.x1) * this.$image.width() / 100
-      let height = width / this.options.aspectRatio
-      this.cropbox.y2 = this.cropbox.y1 + (height * 100 / this.$image.height())
-
-      if (this.cropbox.y2 > 100) {
-        this.cropbox.y2 = 100
-        height = (this.cropbox.y2 - this.cropbox.y1) * this.$image.height() / 100
-        width = height * this.options.aspectRatio
-      }
-
-      this.cropbox.x2 = this.cropbox.x1 + (width * 100 / this.$image.width())
-      this.cropbox.y2 = this.cropbox.y1 + (height * 100 / this.$image.height())
-    }
-
-    if (this.cropbox.x2 < this.cropbox.x1) {
-      this.cropbox.x2 = this.cropbox.x1
-    }
-
-    if (this.cropbox.y2 < this.cropbox.y1) {
-      this.cropbox.y2 = this.cropbox.y1
-    }
-
-    this.positionCropbox()
-  }
-
-  updateFields () {
-    for (let field in this.options.inputs) {
-      if (this.options.inputs[field]) {
-        let value = this.cropbox[field]
-        let factor = Math.pow(10, this.options.precision)
+  /**
+   * Update the cropbox properties to their input elements
+   * @param  {Object} cropbox cropbox properties
+   * @param  {Object} options cropbox options
+   */
+  updateFields (cropbox, options) {
+    for (let field in options.inputs) {
+      if (options.inputs[field]) {
+        let value = cropbox[field]
+        let factor = Math.pow(10, options.precision)
         value = Math.round(value * factor) / factor
-        $(this.options.inputs[field]).val(value)
+        $(options.inputs[field]).val(value)
       }
     }
   }
 
-  init () {
-    this.addDOM()
-    this.positionCropbox()
-    this.resizeCropbox({x: 0, y: 0})
-    this.cropboxDragHandler = new DragHandler(this.$cropbox, this.moveCropbox.bind(this))
-    this.cropboxDragHandler.init()
-    this.resizehandleDragHandler = new DragHandler(this.$resizehandle, this.resizeCropbox.bind(this))
-    this.resizehandleDragHandler.init()
+  init ($image, options) {
+    let cropbox = this.getInitCropbox($image, options)
+    let [$container, $cropbox, $resizehandle] = this.addDOM($image)
+    cropbox = resize(cropbox, { x: 0, y: 0 })
+    this.positionCropbox($cropbox, cropbox)
+    this.updateFields(cropbox, options)
+    let cropboxDragHandler = new DragHandler($cropbox, (offset) => {
+      cropbox = move(cropbox, offset)
+      this.positionCropbox($cropbox, cropbox)
+      this.updateFields(cropbox, options)
+    })
+    cropboxDragHandler.init()
+    let resizehandleDragHandler = new DragHandler($resizehandle, (offset) => {
+      cropbox = resize(cropbox, offset)
+      this.positionCropbox($cropbox, cropbox)
+      this.updateFields(cropbox, options)
+    })
+    resizehandleDragHandler.init()
   }
 }
