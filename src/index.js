@@ -9,18 +9,30 @@ export class ImageCrop {
   constructor (id, options) {
     this.id = id
     this.options = options || {}
-    this.$image = $(`#${id}`)
+    this.$image = $(`${id}`)
     this.options = $.extend(defaults, this.options)
-    this.cropbox = this.options.cropbox || defaults.cropbox
+    this.initCropbox()
 
     // Initialize everything once the image has been loaded
-    let img = document.querySelector(`#${id}`)
+    let img = document.querySelector(id)
     if (img.complete) {
       this.init()
     }
     else {
       img.addEventListener('load', this.init.bind(this))
     }
+  }
+
+  initCropbox () {
+    this.cropbox = {}
+    let fields = ['x1', 'y1', 'x2', 'y2']
+    fields.map(field => {
+      let value = defaults.cropbox[field]
+      if (this.options.inputs[field]) {
+        value = parseFloat($(this.options.inputs[field]).val(), 10) || value 
+      }
+      this.cropbox[field] = value
+    })
   }
 
   addDOM () {
@@ -47,6 +59,7 @@ export class ImageCrop {
       backgroundPosition: `${bpX}px ${bpY}px`,
       backgroundSize: `${width}px ${height}px`,
     })
+    this.updateFields()
   }
 
   moveCropbox (offset) {
@@ -99,6 +112,17 @@ export class ImageCrop {
     }
 
     this.positionCropbox()
+  }
+
+  updateFields () {
+    for (let field in this.options.inputs) {
+      if (this.options.inputs[field]) {
+        let value = this.cropbox[field]
+        let factor = Math.pow(10, this.options.precision)
+        value = Math.round(value * factor) / factor
+        $(this.options.inputs[field]).val(value)
+      }
+    }
   }
 
   init () {

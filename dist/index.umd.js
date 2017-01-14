@@ -91,12 +91,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.id = id;
 	    this.options = options || {};
-	    this.$image = (0, _jquery2.default)('#' + id);
+	    this.$image = (0, _jquery2.default)('' + id);
 	    this.options = _jquery2.default.extend(_defaults2.default, this.options);
-	    this.cropbox = this.options.cropbox || _defaults2.default.cropbox;
+	    this.initCropbox();
 	
-	    var img = document.querySelector('#' + id);
-	
+	    // Initialize everything once the image has been loaded
+	    var img = document.querySelector(id);
 	    if (img.complete) {
 	      this.init();
 	    } else {
@@ -105,6 +105,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	
 	  _createClass(ImageCrop, [{
+	    key: 'initCropbox',
+	    value: function initCropbox() {
+	      var _this = this;
+	
+	      this.cropbox = {};
+	      var fields = ['x1', 'y1', 'x2', 'y2'];
+	      fields.map(function (field) {
+	        var value = _defaults2.default.cropbox[field];
+	        if (_this.options.inputs[field]) {
+	          value = parseFloat((0, _jquery2.default)(_this.options.inputs[field]).val(), 10) || value;
+	        }
+	        _this.cropbox[field] = value;
+	      });
+	    }
+	  }, {
 	    key: 'addDOM',
 	    value: function addDOM() {
 	      this.$image.wrap('<div class="' + _constants2.default.containerClass + '"></div>');
@@ -131,6 +146,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        backgroundPosition: bpX + 'px ' + bpY + 'px',
 	        backgroundSize: width + 'px ' + height + 'px'
 	      });
+	      this.updateFields();
 	    }
 	  }, {
 	    key: 'moveCropbox',
@@ -185,6 +201,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	
 	      this.positionCropbox();
+	    }
+	  }, {
+	    key: 'updateFields',
+	    value: function updateFields() {
+	      for (var field in this.options.inputs) {
+	        if (this.options.inputs[field]) {
+	          var value = this.cropbox[field];
+	          var factor = Math.pow(10, this.options.precision);
+	          value = Math.round(value * factor) / factor;
+	          (0, _jquery2.default)(this.options.inputs[field]).val(value);
+	        }
+	      }
 	    }
 	  }, {
 	    key: 'init',
@@ -348,7 +376,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.default = {
 	  precision: 4,
-	  cropbox: { x1: 0, y1: 0, x2: 50, y2: 50 }
+	  cropbox: { x1: 0, y1: 0, x2: 50, y2: 50 },
+	  inputs: {}
 	};
 
 /***/ },

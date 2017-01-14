@@ -8,11 +8,18 @@
     <script src="dist/index.umd.min.js"></script>
     <script>
       $(document).ready(function () {
-        var img = new imagecrop.ImageCrop('image', {})
+        var img = new imagecrop.ImageCrop(
+          '#image',
+          { inputs: {x1: '#x1', y1: '#y1', x2: '#x2', y2: '#y2'} }
+        )
       })
     </script>
   </head>
   <body>
     <img id="image" src="http://www.publicdomainpictures.net/pictures/60000/nahled/autumn-landscape-1379696322ccb.jpg">
+    <input id="x1" type="text" value="0" />
+    <input id="y1" type="text" value="0" />
+    <input id="x2" type="text" value="80" />
+    <input id="y2" type="text" value="80" />
   </body>
 </html>
