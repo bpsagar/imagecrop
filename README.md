@@ -21,6 +21,7 @@ imagecrop.discover();
 ```
 <img src="{imageURL}" data-imagecrop="{uniqueid}" data-imagecrop-aspectratio="1" data-imagecrop-precision="6" />
 <form>
+  <input type="file" data-imagecrop-file="{uniqueid}" />
   <input type="text" data-imagecrop-x1="{uniqueid}" />
   <input type="text" data-imagecrop-y1="{uniqueid}" />
   <input type="text" data-imagecrop-x2="{uniqueid}" />
