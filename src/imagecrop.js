@@ -26,7 +26,7 @@ export default class ImageCrop {
    * @param  {Object}         options cropbox options
    * @return {Object}         initial cropbox properties
    */
-  getInitCropbox ($image, options) {
+  getInitCropbox ($image, options, forceDefault = false) {
     let cropbox = {
       imageWidth: $image.width(),
       imageHeight: $image.height(),
@@ -35,7 +35,7 @@ export default class ImageCrop {
     let fields = ['x1', 'y1', 'x2', 'y2']
     fields.map(field => {
       let value = defaults.cropbox[field]
-      if (options.inputs[field]) {
+      if (options.inputs[field] && !forceDefault) {
         value = parseFloat($(options.inputs[field]).val(), 10) || value 
       }
       cropbox[field] = value
@@ -55,7 +55,6 @@ export default class ImageCrop {
     let $cropbox = $container.find(`.${constants.cropboxClass}`)
     $cropbox.append(`<div class="${constants.resizehandleClass}"></div>`)
     let $resizehandle = $cropbox.find(`.${constants.resizehandleClass}`)
-    $cropbox.css({ backgroundImage: `url(${$image.attr('src')})` })
     return [$container, $cropbox, $resizehandle]
   }
 
@@ -64,7 +63,7 @@ export default class ImageCrop {
    * @param  {jQuery element} $cropbox image's cropbox element
    * @param  {Object}         cropbox  cropbox properties
    */
-  positionCropbox ($cropbox, cropbox) {
+  positionCropbox ($cropbox, $image, cropbox) {
     let bpX = -(cropbox.x1 * cropbox.imageWidth / 100)
     let bpY = -(cropbox.y1 * cropbox.imageHeight / 100)
     $cropbox.css({
@@ -72,6 +71,7 @@ export default class ImageCrop {
       top: `${cropbox.y1}%`,
       right: `${(100 - cropbox.x2)}%`,
       bottom: `${(100 - cropbox.y2)}%`,
+      backgroundImage: `url(${$image.attr('src')})`,
       backgroundPosition: `${bpX}px ${bpY}px`,
       backgroundSize: `${cropbox.imageWidth}px ${cropbox.imageHeight}px`,
     })
@@ -84,10 +84,16 @@ export default class ImageCrop {
    */
   updateFields (cropbox, options) {
     for (let field in options.inputs) {
+      if (field == 'file') {
+        continue
+      }
       if (options.inputs[field]) {
         let value = cropbox[field]
         let factor = Math.pow(10, options.precision)
         value = Math.round(value * factor) / factor
+        if (isNaN(value)) {
+          value = 0
+        }
         $(options.inputs[field]).val(value)
       }
     }
@@ -97,19 +103,38 @@ export default class ImageCrop {
     let cropbox = this.getInitCropbox($image, options)
     let [$container, $cropbox, $resizehandle] = this.addDOM($image)
     cropbox = resize(cropbox, { x: 0, y: 0 })
-    this.positionCropbox($cropbox, cropbox)
+    this.positionCropbox($cropbox, $image, cropbox)
     this.updateFields(cropbox, options)
     let cropboxDragHandler = new DragHandler($cropbox, (offset) => {
       cropbox = move(cropbox, offset)
-      this.positionCropbox($cropbox, cropbox)
+      this.positionCropbox($cropbox, $image, cropbox)
       this.updateFields(cropbox, options)
     })
     cropboxDragHandler.init()
     let resizehandleDragHandler = new DragHandler($resizehandle, (offset) => {
       cropbox = resize(cropbox, offset)
-      this.positionCropbox($cropbox, cropbox)
+      this.positionCropbox($cropbox, $image, cropbox)
       this.updateFields(cropbox, options)
     })
     resizehandleDragHandler.init()
+
+    if (options.inputs.file && $(options.inputs.file).length) {
+      $(document).on('change', options.inputs.file, (e) => {
+        if (e.target.files && e.target.files[0]) {
+          var reader = new FileReader()
+          reader.onload = (e) => {
+            $image.attr('src', e.target.result)
+            $image[0].addEventListener('load', () => {
+              cropbox = this.getInitCropbox($image, options, true)
+              cropbox = move(cropbox, {x: 0, y: 0})
+              cropbox = resize(cropbox, {x: 0, y: 0})
+              this.positionCropbox($cropbox, $image, cropbox)
+              this.updateFields(cropbox, options)
+            })
+          }
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      })
+    }
   }
 }

@@ -62,6 +62,8 @@ var ImageCrop = function () {
   _createClass(ImageCrop, [{
     key: 'getInitCropbox',
     value: function getInitCropbox($image, options) {
+      var forceDefault = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
       var cropbox = {
         imageWidth: $image.width(),
         imageHeight: $image.height(),
@@ -70,7 +72,7 @@ var ImageCrop = function () {
       var fields = ['x1', 'y1', 'x2', 'y2'];
       fields.map(function (field) {
         var value = _defaults2.default.cropbox[field];
-        if (options.inputs[field]) {
+        if (options.inputs[field] && !forceDefault) {
           value = parseFloat((0, _jquery2.default)(options.inputs[field]).val(), 10) || value;
         }
         cropbox[field] = value;
@@ -93,7 +95,6 @@ var ImageCrop = function () {
       var $cropbox = $container.find('.' + _constants2.default.cropboxClass);
       $cropbox.append('<div class="' + _constants2.default.resizehandleClass + '"></div>');
       var $resizehandle = $cropbox.find('.' + _constants2.default.resizehandleClass);
-      $cropbox.css({ backgroundImage: 'url(' + $image.attr('src') + ')' });
       return [$container, $cropbox, $resizehandle];
     }
 
@@ -105,7 +106,7 @@ var ImageCrop = function () {
 
   }, {
     key: 'positionCropbox',
-    value: function positionCropbox($cropbox, cropbox) {
+    value: function positionCropbox($cropbox, $image, cropbox) {
       var bpX = -(cropbox.x1 * cropbox.imageWidth / 100);
       var bpY = -(cropbox.y1 * cropbox.imageHeight / 100);
       $cropbox.css({
@@ -113,6 +114,7 @@ var ImageCrop = function () {
         top: cropbox.y1 + '%',
         right: 100 - cropbox.x2 + '%',
         bottom: 100 - cropbox.y2 + '%',
+        backgroundImage: 'url(' + $image.attr('src') + ')',
         backgroundPosition: bpX + 'px ' + bpY + 'px',
         backgroundSize: cropbox.imageWidth + 'px ' + cropbox.imageHeight + 'px'
       });
@@ -128,10 +130,16 @@ var ImageCrop = function () {
     key: 'updateFields',
     value: function updateFields(cropbox, options) {
       for (var field in options.inputs) {
+        if (field == 'file') {
+          continue;
+        }
         if (options.inputs[field]) {
           var value = cropbox[field];
           var factor = Math.pow(10, options.precision);
           value = Math.round(value * factor) / factor;
+          if (isNaN(value)) {
+            value = 0;
+          }
           (0, _jquery2.default)(options.inputs[field]).val(value);
         }
       }
@@ -150,20 +158,41 @@ var ImageCrop = function () {
           $resizehandle = _addDOM2[2];
 
       cropbox = (0, _cropbox.resize)(cropbox, { x: 0, y: 0 });
-      this.positionCropbox($cropbox, cropbox);
+      this.positionCropbox($cropbox, $image, cropbox);
       this.updateFields(cropbox, options);
       var cropboxDragHandler = new _draghandler2.default($cropbox, function (offset) {
         cropbox = (0, _cropbox.move)(cropbox, offset);
-        _this2.positionCropbox($cropbox, cropbox);
+        _this2.positionCropbox($cropbox, $image, cropbox);
         _this2.updateFields(cropbox, options);
       });
       cropboxDragHandler.init();
       var resizehandleDragHandler = new _draghandler2.default($resizehandle, function (offset) {
+        console.log(offset);
         cropbox = (0, _cropbox.resize)(cropbox, offset);
-        _this2.positionCropbox($cropbox, cropbox);
+        _this2.positionCropbox($cropbox, $image, cropbox);
         _this2.updateFields(cropbox, options);
       });
       resizehandleDragHandler.init();
+
+      if (options.inputs.file && (0, _jquery2.default)(options.inputs.file).length) {
+        (0, _jquery2.default)(document).on('change', options.inputs.file, function (e) {
+          if (e.target.files && e.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+              $image.attr('src', e.target.result);
+              $image[0].addEventListener('load', function () {
+                cropbox = _this2.getInitCropbox($image, options, true);
+                console.log(cropbox);
+                cropbox = (0, _cropbox.move)(cropbox, { x: 0, y: 0 });
+                cropbox = (0, _cropbox.resize)(cropbox, { x: 0, y: 0 });
+                _this2.positionCropbox($cropbox, $image, cropbox);
+                _this2.updateFields(cropbox, options);
+              });
+            };
+            reader.readAsDataURL(e.target.files[0]);
+          }
+        });
+      }
     }
   }]);
 

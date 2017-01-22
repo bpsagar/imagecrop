@@ -33,7 +33,8 @@ var discover = exports.discover = function discover() {
         x1: '[data-imagecrop-x1="' + id + '"]',
         y1: '[data-imagecrop-y1="' + id + '"]',
         x2: '[data-imagecrop-x2="' + id + '"]',
-        y2: '[data-imagecrop-y2="' + id + '"]'
+        y2: '[data-imagecrop-y2="' + id + '"]',
+        file: '[data-imagecrop-file="' + id + '"]'
       }
     });
   });
