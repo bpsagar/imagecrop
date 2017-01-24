@@ -517,8 +517,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  _createClass(ImageCrop, [{
 	    key: 'getInitCropbox',
-	    value: function getInitCropbox($image, options) {
-	      var forceDefault = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+	    value: function getInitCropbox($image, $cropbox, options) {
+	      var forceDefault = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
 	
 	      var cropbox = {
 	        imageWidth: $image.width(),
@@ -532,6 +532,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	          value = parseFloat((0, _jquery2.default)(options.inputs[field]).val(), 10) || value;
 	        }
 	        cropbox[field] = value;
+	      });
+	      $cropbox.css({
+	        backgroundImage: 'url(' + $image.attr('src') + ')'
 	      });
 	      return cropbox;
 	    }
@@ -570,7 +573,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        top: cropbox.y1 + '%',
 	        right: 100 - cropbox.x2 + '%',
 	        bottom: 100 - cropbox.y2 + '%',
-	        backgroundImage: 'url(' + $image.attr('src') + ')',
 	        backgroundPosition: bpX + 'px ' + bpY + 'px',
 	        backgroundSize: cropbox.imageWidth + 'px ' + cropbox.imageHeight + 'px'
 	      });
@@ -605,14 +607,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function init($image, options) {
 	      var _this2 = this;
 	
-	      var cropbox = this.getInitCropbox($image, options);
-	
 	      var _addDOM = this.addDOM($image),
 	          _addDOM2 = _slicedToArray(_addDOM, 3),
 	          $container = _addDOM2[0],
 	          $cropbox = _addDOM2[1],
 	          $resizehandle = _addDOM2[2];
 	
+	      var cropbox = this.getInitCropbox($image, $cropbox, options);
 	      cropbox = (0, _cropbox.resize)(cropbox, { x: 0, y: 0 });
 	      this.positionCropbox($cropbox, $image, cropbox);
 	      this.updateFields(cropbox, options);
@@ -623,7 +624,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      });
 	      cropboxDragHandler.init();
 	      var resizehandleDragHandler = new _draghandler2.default($resizehandle, function (offset) {
-	        console.log(offset);
 	        cropbox = (0, _cropbox.resize)(cropbox, offset);
 	        _this2.positionCropbox($cropbox, $image, cropbox);
 	        _this2.updateFields(cropbox, options);
@@ -637,8 +637,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            reader.onload = function (e) {
 	              $image.attr('src', e.target.result);
 	              $image[0].addEventListener('load', function () {
-	                cropbox = _this2.getInitCropbox($image, options, true);
-	                console.log(cropbox);
+	                cropbox = _this2.getInitCropbox($image, $cropbox, options, true);
 	                cropbox = (0, _cropbox.move)(cropbox, { x: 0, y: 0 });
 	                cropbox = (0, _cropbox.resize)(cropbox, { x: 0, y: 0 });
 	                _this2.positionCropbox($cropbox, $image, cropbox);

@@ -26,7 +26,7 @@ export default class ImageCrop {
    * @param  {Object}         options cropbox options
    * @return {Object}         initial cropbox properties
    */
-  getInitCropbox ($image, options, forceDefault = false) {
+  getInitCropbox ($image, $cropbox, options, forceDefault = false) {
     let cropbox = {
       imageWidth: $image.width(),
       imageHeight: $image.height(),
@@ -39,6 +39,9 @@ export default class ImageCrop {
         value = parseFloat($(options.inputs[field]).val(), 10) || value 
       }
       cropbox[field] = value
+    })
+    $cropbox.css({
+      backgroundImage: `url(${$image.attr('src')})`
     })
     return cropbox
   }
@@ -71,7 +74,6 @@ export default class ImageCrop {
       top: `${cropbox.y1}%`,
       right: `${(100 - cropbox.x2)}%`,
       bottom: `${(100 - cropbox.y2)}%`,
-      backgroundImage: `url(${$image.attr('src')})`,
       backgroundPosition: `${bpX}px ${bpY}px`,
       backgroundSize: `${cropbox.imageWidth}px ${cropbox.imageHeight}px`,
     })
@@ -100,8 +102,8 @@ export default class ImageCrop {
   }
 
   init ($image, options) {
-    let cropbox = this.getInitCropbox($image, options)
     let [$container, $cropbox, $resizehandle] = this.addDOM($image)
+    let cropbox = this.getInitCropbox($image, $cropbox, options)
     cropbox = resize(cropbox, { x: 0, y: 0 })
     this.positionCropbox($cropbox, $image, cropbox)
     this.updateFields(cropbox, options)
@@ -125,7 +127,7 @@ export default class ImageCrop {
           reader.onload = (e) => {
             $image.attr('src', e.target.result)
             $image[0].addEventListener('load', () => {
-              cropbox = this.getInitCropbox($image, options, true)
+              cropbox = this.getInitCropbox($image, $cropbox, options, true)
               cropbox = move(cropbox, {x: 0, y: 0})
               cropbox = resize(cropbox, {x: 0, y: 0})
               this.positionCropbox($cropbox, $image, cropbox)
