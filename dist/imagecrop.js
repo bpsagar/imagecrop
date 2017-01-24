@@ -91,6 +91,9 @@ var ImageCrop = function () {
   }, {
     key: 'addDOM',
     value: function addDOM($image) {
+      if ($image.data('imagecrop-initialized')) {
+        return;
+      }
       $image.wrap('<div class="' + _constants2.default.containerClass + '"></div>');
       var $container = $image.closest('.' + _constants2.default.containerClass);
       $container.append('<div class="' + _constants2.default.overlayClass + '"></div>');
@@ -98,6 +101,7 @@ var ImageCrop = function () {
       var $cropbox = $container.find('.' + _constants2.default.cropboxClass);
       $cropbox.append('<div class="' + _constants2.default.resizehandleClass + '"></div>');
       var $resizehandle = $cropbox.find('.' + _constants2.default.resizehandleClass);
+      $image.data('imagecrop-initialized', true);
       return [$container, $cropbox, $resizehandle];
     }
 

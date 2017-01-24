@@ -51,6 +51,9 @@ export default class ImageCrop {
    * @param {jQuery element} $image image element
    */
   addDOM ($image) {
+    if ($image.data('imagecrop-initialized')) {
+      return
+    }
     $image.wrap(`<div class="${constants.containerClass}"></div>`)
     let $container = $image.closest(`.${constants.containerClass}`)
     $container.append(`<div class="${constants.overlayClass}"></div>`)
@@ -58,6 +61,7 @@ export default class ImageCrop {
     let $cropbox = $container.find(`.${constants.cropboxClass}`)
     $cropbox.append(`<div class="${constants.resizehandleClass}"></div>`)
     let $resizehandle = $cropbox.find(`.${constants.resizehandleClass}`)
+    $image.data('imagecrop-initialized', true)
     return [$container, $cropbox, $resizehandle]
   }
 
