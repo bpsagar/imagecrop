@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ImageCrop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.2.4/milligram.min.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://npmcdn.com/imagecrop@1.0.4/dist/index.umd.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        imagecrop.discover();
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ImageCrop</h1>
+      <img src="https://cdn.pixabay.com/photo/2013/10/02/23/03/dawn-190055_960_720.jpg" data-imagecrop="image" data-imagecrop-aspectratio="1" data-imagecrop-precision="6" />
+      <form>
+        <fieldset>
+          <label for="imageFile">Image File <small>Try for a different file</small></label>
+          <input id="imageFile" type="file" data-imagecrop-file="image" />
+          <label for="imageX1">X1 <small>Top left vertex x-axis position in %</small></label>
+          <input id="imageX1" type="text" data-imagecrop-x1="image" value="25" />
+          <label for="imageY1">Y1 <small>Top left vertex y-axis position in %</small></label>
+          <input id="imageY1" type="text" data-imagecrop-y1="image" value="12" />
+          <label for="imageX2">X2 <small>Bottom right vertex x-axis position in %</small></label>
+          <input id="imageX2" type="text" data-imagecrop-x2="image" value="75" />
+          <label for="imageY2">Y2 <small>Bottom right vertex y-axis position in %</small></label>
+          <input id="imageY2" type="text" data-imagecrop-y2="image" value="88" />
+        </fieldset>
+      </form>
+    </div>
+  </body>
+</html>

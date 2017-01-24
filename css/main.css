@@ -1,0 +1,12 @@
+.container {
+  max-width: 50rem;
+}
+.imagecrop {
+  width: 100%;
+}
+img {
+  width: 100%;
+}
+img[src="#"] {
+  display: none;
+}
